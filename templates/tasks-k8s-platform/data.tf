@@ -25,6 +25,6 @@ data "coder_parameter" "ai_prompt" {
   mutable     = true
 }
 
-// data "coder_external_auth" "github" {
-//   id = "primary-github"
-// }
+data "coder_external_auth" "github" {
+  id = "primary-github"
+}

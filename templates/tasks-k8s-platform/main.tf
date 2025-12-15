@@ -189,21 +189,6 @@ module "code-server" {
   agent_id = coder_agent.main.id
 }
 
-resource "coder_script" "configure_bitbucket_ssh" {
-  agent_id           = coder_agent.main.id
-  display_name       = "Configure Bitbucket SSH"
-  run_on_start       = true
-  start_blocks_login = true
-
-  script = <<-EOT
-    set -e
-    echo "Adding Bitbucket to known hosts"
-    mkdir -p /home/coder/.ssh
-    touch /home/coder/.ssh/known_hosts
-    ssh-keyscan -H bitbucket.org > ~/.ssh/known_hosts
-  EOT
-}
-
 module "coder-login" {
   count    = data.coder_workspace.me.start_count
   source   = "registry.coder.com/coder/coder-login/coder"
