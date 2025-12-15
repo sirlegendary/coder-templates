@@ -28,6 +28,27 @@ resource "kubernetes_persistent_volume_claim_v1" "workspaces" {
   }
 }
 
+data "kubernetes_secret_v1" "coder_ca_source" {
+  count = var.coder_ca_secret_name != "" ? 1 : 0
+
+  metadata {
+    name      = var.coder_ca_secret_name
+    namespace = var.coder_ca_secret_namespace
+  }
+}
+
+resource "kubernetes_secret_v1" "coder_ca" {
+  count = var.coder_ca_secret_name != "" ? 1 : 0
+
+  metadata {
+    name      = "coder-ca-${local.workspace_name}"
+    namespace = var.namespace
+  }
+
+  data = data.kubernetes_secret_v1.coder_ca_source[0].data
+  type = data.kubernetes_secret_v1.coder_ca_source[0].type
+}
+
 resource "kubernetes_pod_v1" "dev" {
   count = data.coder_workspace.me.start_count
 
@@ -85,7 +106,21 @@ resource "kubernetes_pod_v1" "dev" {
       image             = local.devcontainer_builder_image
       image_pull_policy = "IfNotPresent"
 
-      command = ["sh", "-c", coder_agent.main.init_script]
+      dynamic "security_context" {
+        for_each = var.coder_ca_secret_name != "" ? [1] : []
+        content {
+          run_as_user = 0
+        }
+      }
+
+      command = ["sh", "-c", <<-EOT
+        if [ -f /mnt/coder-ca/tls.crt ]; then
+          cp /mnt/coder-ca/tls.crt /usr/local/share/ca-certificates/coder-ca.crt
+          update-ca-certificates
+        fi
+        ${coder_agent.main.init_script}
+      EOT
+      ]
 
       env {
         name  = "CODER_AGENT_TOKEN"
@@ -124,6 +159,15 @@ resource "kubernetes_pod_v1" "dev" {
         name       = "workspaces"
         read_only  = false
       }
+
+      dynamic "volume_mount" {
+        for_each = var.coder_ca_secret_name != "" ? [1] : []
+        content {
+          mount_path = "/mnt/coder-ca"
+          name       = "coder-ca"
+          read_only  = true
+        }
+      }
     }
 
     volume {
@@ -132,6 +176,17 @@ resource "kubernetes_pod_v1" "dev" {
       persistent_volume_claim {
         claim_name = kubernetes_persistent_volume_claim_v1.workspaces.metadata[0].name
         read_only  = false
+      }
+    }
+
+    dynamic "volume" {
+      for_each = var.coder_ca_secret_name != "" ? [1] : []
+      content {
+        name = "coder-ca"
+        secret {
+          secret_name = kubernetes_secret_v1.coder_ca[0].metadata[0].name
+          optional    = false
+        }
       }
     }
   }
