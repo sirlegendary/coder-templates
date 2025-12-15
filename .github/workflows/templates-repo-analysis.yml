@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: "Start Coder Task"
         id: coder-task
-        uses: coder/create-task-action@v0
+        uses: coder/create-task-action@v0.0.4
         with:
           coder-url: ${{ secrets.CODER_URL }}
           coder-token: ${{ secrets.CODER_TOKEN }}
