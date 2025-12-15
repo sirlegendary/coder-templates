@@ -20,7 +20,7 @@ data "kubernetes_secret_v1" "openai_api_key" {
 data "coder_parameter" "ai_prompt" {
   type        = "string"
   name        = "AI Prompt"
-  default     = "Summarise the code in this directory."
+  default     = "Summarise this repository."
   description = "Initial prompt for the Codex CLI"
   mutable     = true
 }
