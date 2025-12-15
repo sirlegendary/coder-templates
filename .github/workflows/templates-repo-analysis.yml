@@ -3,6 +3,14 @@ name: "Coder Templates Repo Analysis"
 on:
   # Manually trigger from the GitHub UI
   workflow_dispatch:
+    inputs:
+      github_issue_url:
+        description: "Optional: issue URL to link the Coder task to when running manually."
+        required: false
+
+  issues:
+    types:
+      - labeled
 
 permissions:
   issues: write
@@ -11,7 +19,7 @@ permissions:
 jobs:
   run-coder-task:
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'templates-analysis'
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'issues' && github.event.label.name == 'templates-analysis')
     steps:
       - name: "Start Coder Task"
         id: coder-task
@@ -67,10 +75,11 @@ jobs:
             - Keep the report under ~2–3 pages of text.
 
           # Optional GitHub linking (only needed if you want the task to use gh itself)
-          github-user-id: ${{ github.event.sender.id || github.triggering_actor_id }}
+          github-user-id: ${{ github.event.sender.id || github.actor_id }}
+          github-issue-url: ${{ github.event.issue.html_url || inputs.github_issue_url || format('{0}/{1}/actions/runs/{2}', github.server_url, github.repository, github.run_id) }}
           github-token: ${{ github.token }}
           # This makes the action add a basic comment once the task starts
-          comment-on-issue: ${{ github.event_name == 'issues' && 'true' || 'false' }}
+          comment-on-issue: ${{ github.event_name == 'issues' }}
 
       - name: "Post report as issue comment"
         if: github.event_name == 'issues'
@@ -85,7 +94,7 @@ jobs:
             // accessible. For a simple demo, have the task print the report
             // at the end; you can then paste a link to the task run here.
 
-            const taskUrl = core.getInput('coder-task-url') || '${{ steps.coder-task.outputs.task-url || '' }}';
+            const taskUrl = '${{ steps.coder-task.outputs.task-url }}';
 
             const body = [
               "### Coder templates repo analysis started",
