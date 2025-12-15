@@ -130,6 +130,15 @@ resource "kubernetes_pod_v1" "dev" {
           name       = "workspaces"
           read_only  = false
         }
+
+        dynamic "volume_mount" {
+          for_each = var.coder_ca_secret_name != "" ? [1] : []
+          content {
+            mount_path = "/coder-ca"
+            name       = "coder-ca-bundle"
+            read_only  = true
+          }
+        }
       }
     }
     container {
