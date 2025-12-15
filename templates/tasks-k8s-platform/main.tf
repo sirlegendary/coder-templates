@@ -80,6 +80,37 @@ resource "kubernetes_pod_v1" "dev" {
       fs_group    = 1000
     }
 
+    dynamic "init_container" {
+      for_each = var.coder_ca_secret_name != "" ? [1] : []
+      content {
+        name              = "install-coder-ca"
+        image             = local.devcontainer_builder_image
+        image_pull_policy = "IfNotPresent"
+
+        security_context {
+          run_as_user = 0
+        }
+
+        command = ["sh", "-c", <<-EOT
+          set -e
+          cat /etc/ssl/certs/ca-certificates.crt /mnt/coder-ca/tls.crt > /coder-ca/ca-certificates.crt
+        EOT
+        ]
+
+        volume_mount {
+          mount_path = "/mnt/coder-ca"
+          name       = "coder-ca"
+          read_only  = true
+        }
+
+        volume_mount {
+          mount_path = "/coder-ca"
+          name       = "coder-ca-bundle"
+          read_only  = false
+        }
+      }
+    }
+
     # Docker-in-Docker sidecar container (privileged)
     dynamic "container" {
       for_each = var.use_docker_sidecar ? [1] : []
@@ -106,21 +137,7 @@ resource "kubernetes_pod_v1" "dev" {
       image             = local.devcontainer_builder_image
       image_pull_policy = "IfNotPresent"
 
-      dynamic "security_context" {
-        for_each = var.coder_ca_secret_name != "" ? [1] : []
-        content {
-          run_as_user = 0
-        }
-      }
-
-      command = ["sh", "-c", <<-EOT
-        if [ -f /mnt/coder-ca/tls.crt ]; then
-          cp /mnt/coder-ca/tls.crt /usr/local/share/ca-certificates/coder-ca.crt
-          update-ca-certificates
-        fi
-        ${coder_agent.main.init_script}
-      EOT
-      ]
+      command = ["sh", "-c", coder_agent.main.init_script]
 
       env {
         name  = "CODER_AGENT_TOKEN"
@@ -131,6 +148,22 @@ resource "kubernetes_pod_v1" "dev" {
       env {
         name  = "CODER_URL"
         value = "http://coder.coder.svc.cluster.local"
+      }
+
+      dynamic "env" {
+        for_each = var.coder_ca_secret_name != "" ? [1] : []
+        content {
+          name  = "SSL_CERT_FILE"
+          value = "/coder-ca/ca-certificates.crt"
+        }
+      }
+
+      dynamic "env" {
+        for_each = var.coder_ca_secret_name != "" ? [1] : []
+        content {
+          name  = "NODE_EXTRA_CA_CERTS"
+          value = "/coder-ca/ca-certificates.crt"
+        }
       }
 
       # Docker host for sidecar (if enabled)
@@ -168,6 +201,15 @@ resource "kubernetes_pod_v1" "dev" {
           read_only  = true
         }
       }
+
+      dynamic "volume_mount" {
+        for_each = var.coder_ca_secret_name != "" ? [1] : []
+        content {
+          mount_path = "/coder-ca"
+          name       = "coder-ca-bundle"
+          read_only  = true
+        }
+      }
     }
 
     volume {
@@ -187,6 +229,14 @@ resource "kubernetes_pod_v1" "dev" {
           secret_name = kubernetes_secret_v1.coder_ca[0].metadata[0].name
           optional    = false
         }
+      }
+    }
+
+    dynamic "volume" {
+      for_each = var.coder_ca_secret_name != "" ? [1] : []
+      content {
+        name = "coder-ca-bundle"
+        empty_dir {}
       }
     }
   }
