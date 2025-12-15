@@ -249,14 +249,20 @@ resource "coder_agent" "main" {
   # Startup script (conditional based on Sysbox - see locals.tf)
   startup_script = local.startup_script
 
-  env = {
-    GIT_AUTHOR_NAME     = local.git_author_name
-    GIT_AUTHOR_EMAIL    = local.git_author_email
-    GIT_COMMITTER_NAME  = local.git_author_name
-    GIT_COMMITTER_EMAIL = local.git_author_email
-    # Use internal service URL to avoid TLS issues
-    CODER_URL = "http://coder.coder.svc.cluster.local"
-  }
+  env = merge(
+    {
+      GIT_AUTHOR_NAME     = local.git_author_name
+      GIT_AUTHOR_EMAIL    = local.git_author_email
+      GIT_COMMITTER_NAME  = local.git_author_name
+      GIT_COMMITTER_EMAIL = local.git_author_email
+      # Use internal service URL to avoid TLS issues
+      CODER_URL = "http://coder.coder.svc.cluster.local"
+    },
+    var.coder_ca_secret_name != "" ? {
+      SSL_CERT_FILE       = "/coder-ca/ca-certificates.crt"
+      NODE_EXTRA_CA_CERTS = "/coder-ca/ca-certificates.crt"
+    } : {}
+  )
 
   metadata {
     display_name = "CPU Usage"
