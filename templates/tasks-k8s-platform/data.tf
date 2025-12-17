@@ -6,7 +6,7 @@ data "coder_parameter" "repo_url" {
   type        = "string"
   name        = "repo_url"
   display_name = "Repo URL"
-  default     = "https://gitea.globallogic.local/sirlegendary/coder-templates"
+  default     = "git@git.globallogic.local:sirlegendary/coder-templates.git"
   description = "Repo to clone/build."
   mutable     = true
 }
