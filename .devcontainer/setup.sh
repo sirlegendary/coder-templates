@@ -12,7 +12,14 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 apt-get update -y && apt-get install -y \
-    ca-certificates curl wget jq git gh gnupg lsb-release unzip 
+    ca-certificates curl wget jq git gh gnupg lsb-release unzip
+
+# Install CA cert from parent workspace container (if available)
+if [ -f /coder-ca/ca-certificates.crt ]; then
+  echo "Installing internal CA certificates..."
+  cp /coder-ca/ca-certificates.crt /usr/local/share/ca-certificates/internal-ca.crt
+  update-ca-certificates
+fi 
 
 # Terraform
 mkdir -p /usr/share/keyrings
