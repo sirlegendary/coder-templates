@@ -92,7 +92,6 @@ jobs:
           TASK_OUTPUT=$(coder task create \
             --template "tasks-k8s-platform" \
             --name "templates-audit-$(date +%s)" \
-            --parameter "repo_url=git@git.globallogic.local:sirlegendary/coder-templates.git" \
             "$TASK_PROMPT" \
             2>&1)
 
