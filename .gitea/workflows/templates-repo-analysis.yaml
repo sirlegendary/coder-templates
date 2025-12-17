@@ -1,0 +1,124 @@
+name: "Coder Templates Repo Analysis"
+
+on:
+  # Manually trigger from the Gitea UI
+  workflow_dispatch:
+    inputs:
+      gitea_issue_url:
+        description: "Optional: issue URL to link the Coder task to when running manually."
+        required: false
+
+  issues:
+    types:
+      - labeled
+
+jobs:
+  run-coder-task:
+    runs-on: ubuntu-latest
+    if: gitea.event_name == 'workflow_dispatch' || (gitea.event_name == 'issues' && gitea.event.label.name == 'templates-analysis')
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v4
+
+      - name: "Start Coder Task"
+        id: coder-task
+        env:
+          CODER_URL: ${{ secrets.CODER_URL }}
+          CODER_TOKEN: ${{ secrets.CODER_TOKEN }}
+          GITEA_ACTOR: ${{ gitea.actor }}
+          GITEA_ISSUE_URL: ${{ gitea.event.issue.html_url || inputs.gitea_issue_url || '' }}
+          GITEA_RUN_URL: ${{ gitea.server_url }}/${{ gitea.repository }}/actions/runs/${{ gitea.run_id }}
+        run: |
+          # Install Coder CLI if not available
+          if ! command -v coder &> /dev/null; then
+            curl -fsSL https://coder.com/install.sh | sh
+          fi
+
+          # Create the Coder task using the correct CLI syntax
+          # The prompt is passed as the final argument (input)
+          TASK_PROMPT="You are a senior platform engineer responsible for maintaining a Coder templates repository.
+
+Repository purpose:
+- It contains multiple Coder templates under a /templates directory.
+- Each template is used to provision Coder workspaces and/or AI Tasks.
+- There is a devcontainer configuration for working on these templates.
+
+Your goals:
+1. Validate template quality
+   - Check Terraform files for each template (main.tf, variables.tf, outputs.tf, etc.).
+   - Ensure required providers and versions are declared clearly.
+   - Verify resources like coder_agent, coder_devcontainer, coder_ai_task are used correctly.
+   - Look for obvious security or reliability issues (secrets, overly broad permissions, etc.).
+
+2. Validate devcontainer setup
+   - Inspect .devcontainer/devcontainer.json and related scripts (e.g., setup.sh).
+   - Confirm the devcontainer has the tools needed to work on these templates:
+     - Terraform + coder provider
+     - Git and GitHub CLI (gh)
+     - Any CLI tools implied by the templates (kubectl, helm, etc.).
+   - Identify missing tools or brittle assumptions and suggest improvements.
+
+3. Documentation and structure
+   - Check that each template has a README that explains:
+     - What the template is for.
+     - Prerequisites.
+     - How to use it in Coder (including any parameters).
+   - Identify templates with weak or missing documentation.
+   - Check for a top-level README that explains the overall templates repo layout.
+
+4. Consistency and best practices
+   - Look for inconsistent patterns between templates (naming, folder structure, variable naming, tags/labels).
+   - Suggest a standard layout and naming convention across templates.
+   - Identify any duplication that could be refactored (shared devcontainer base, shared modules, etc.).
+
+Tasks to perform:
+- Analyze the repository and produce a concise report in Markdown that includes:
+  - A summary of strengths.
+  - A list of concrete issues or improvements, grouped by template.
+  - High-priority fixes (things that would break users or tasks).
+  - Medium/low-priority cleanup or refactors.
+- Save the report to /tmp/templates-audit.md in the workspace.
+- Keep the report under ~2–3 pages of text."
+
+          # Create task using Coder CLI with correct syntax
+          # Usage: coder task create [flags] [input]
+          TASK_OUTPUT=$(coder task create \
+            --template "tasks-k8s-platform" \
+            --name "templates-audit-$(date +%s)" \
+            "$TASK_PROMPT" \
+            2>&1)
+
+          echo "Task creation output: $TASK_OUTPUT"
+          
+          # Extract task ID or URL from output
+          # The --quiet flag would give just the ID, but we want to see full output for debugging
+          TASK_ID=$(echo "$TASK_OUTPUT" | grep -oP 'task-[a-zA-Z0-9-]+' | head -1 || echo "")
+          if [ -n "$TASK_ID" ]; then
+            TASK_URL="$CODER_URL/tasks/$TASK_ID"
+          else
+            TASK_URL="$CODER_URL/tasks"
+          fi
+          echo "task-url=$TASK_URL" >> $GITEA_OUTPUT
+
+      - name: "Post report as issue comment"
+        if: gitea.event_name == 'issues'
+        env:
+          GITEA_TOKEN: ${{ secrets.TEA_TOKEN }}
+          GITEA_API_URL: ${{ gitea.api_url }}
+          ISSUE_NUMBER: ${{ gitea.event.issue.number }}
+          TASK_URL: ${{ steps.coder-task.outputs.task-url }}
+        run: |
+          COMMENT_BODY=$(cat <<EOF
+          ### Coder templates repo analysis started
+
+          Task: ${TASK_URL:-"The Coder Task is running; open Coder → Tasks to see the report when it completes."}
+
+          _For a production setup, extend the task to commit /tmp/templates-audit.md into the repo or echo it so this step can pull and paste it here._
+          EOF
+          )
+
+          curl -X POST \
+            -H "Authorization: token $GITEA_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"body\": $(echo "$COMMENT_BODY" | jq -Rs .)}" \
+            "$GITEA_API_URL/repos/${{ gitea.repository }}/issues/$ISSUE_NUMBER/comments"
