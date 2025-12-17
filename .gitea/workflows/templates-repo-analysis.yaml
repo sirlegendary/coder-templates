@@ -84,7 +84,7 @@ jobs:
             - A list of concrete issues or improvements, grouped by template.
             - High-priority fixes (things that would break users or tasks).
             - Medium/low-priority cleanup or refactors.
-          - Save the report to /tmp/templates-audit.md in the workspace.
+          - Save the report to /workspaces/templates-audit.md in the workspace.
           - Keep the report under ~2–3 pages of text."
 
           # Create task using Coder CLI with correct syntax
@@ -92,6 +92,7 @@ jobs:
           TASK_OUTPUT=$(coder task create \
             --template "tasks-k8s-platform" \
             --name "templates-audit-$(date +%s)" \
+            --parameter "repo_url=git@git.globallogic.local:sirlegendary/coder-templates.git" \
             "$TASK_PROMPT" \
             2>&1)
 

@@ -3,7 +3,8 @@ module "codex" {
   version        = "3.1.1"
   agent_id       = coder_agent.main.id
   openai_api_key = data.kubernetes_secret_v1.openai_api_key.data["api-key"]
-  ai_prompt      = data.coder_parameter.ai_prompt.value
+  codex_model    = "gpt-5-mini"
+  ai_prompt      = data.coder_task.me.prompt 
   workdir        = local.repo_base_dir
 
   # Custom configuration for full auto mode
