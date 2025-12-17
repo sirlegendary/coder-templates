@@ -1,6 +1,6 @@
 {
   "name": "platform-env",
-  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-22.04",
+  "image": "localhost/ubuntu-base-globallogic:22.04",
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   },
