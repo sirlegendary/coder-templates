@@ -89,9 +89,10 @@ jobs:
 
           # Create task using Coder CLI with correct syntax
           # Usage: coder task create [flags] [input]
+          TASK_NAME="templates-audit-$(date +%Y%m%d)-$(openssl rand -hex 3)"
           TASK_OUTPUT=$(coder task create \
             --template "tasks-k8s-platform" \
-            --name "templates-audit-$(date +%s)" \
+            --name "$TASK_NAME" \
             "$TASK_PROMPT" \
             2>&1)
 
