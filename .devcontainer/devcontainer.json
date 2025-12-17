@@ -1,6 +1,13 @@
 {
   "name": "platform-env",
-  "image": "localhost/ubuntu-base-globallogic:22.04",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-22.04",
+  "mounts": [
+    "source=/coder-ca,target=/coder-ca,type=bind,readonly"
+  ],
+  "remoteEnv": {
+    "SSL_CERT_FILE": "/coder-ca/ca-certificates.crt",
+    "NODE_EXTRA_CA_CERTS": "/coder-ca/ca-certificates.crt"
+  },
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   },

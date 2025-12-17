@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "Installing additional tools..."
+echo "Installing dependencies..."
 
 if [ "$(id -u)" -ne 0 ]; then
   if command -v sudo >/dev/null 2>&1; then
@@ -11,7 +11,13 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
-# Install Terraform (repo already configured in base image)
+apt-get update -y && apt-get install -y \
+    ca-certificates curl wget jq git gh gnupg lsb-release unzip 
+
+# Terraform
+mkdir -p /usr/share/keyrings
+curl -fsSL https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list >/dev/null
 apt-get update && apt-get install -y terraform
 
 # TFLint

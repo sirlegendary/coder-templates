@@ -6,7 +6,7 @@ data "coder_parameter" "repo_url" {
   type        = "string"
   name        = "repo_url"
   display_name = "Repo URL"
-  default     = "https://github.com/Indexfeed/demo-flask-devcontainer"
+  default     = "https://gitea.globallogic.local/sirlegendary/coder-templates"
   description = "Repo to clone/build."
   mutable     = true
 }
