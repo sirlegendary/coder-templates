@@ -24,7 +24,7 @@ jobs:
         id: coder-task
         env:
           CODER_URL: ${{ secrets.CODER_URL }}
-          CODER_TOKEN: ${{ secrets.CODER_TOKEN }}
+          CODER_SESSION_TOKEN: ${{ secrets.CODER_TOKEN }}
           GITEA_ACTOR: ${{ gitea.actor }}
           GITEA_ISSUE_URL: ${{ gitea.event.issue.html_url }}
           GITEA_RUN_URL: ${{ gitea.server_url }}/${{ gitea.repository }}/actions/runs/${{ gitea.run_id }}
@@ -33,6 +33,13 @@ jobs:
           if ! command -v coder &> /dev/null; then
             curl -fsSL https://coder.com/install.sh | sh
           fi
+
+          # Verify authentication
+          echo "Verifying Coder authentication..."
+          coder whoami || {
+            echo "Failed to authenticate with Coder"
+            exit 1
+          }
 
           # Create the Coder task using the correct CLI syntax
           # The prompt is passed as the final argument (input)
