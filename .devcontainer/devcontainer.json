@@ -18,6 +18,9 @@
         "hashicorp.terraform",
         "ms-kubernetes-tools.vscode-kubernetes-tools"
       ]
+    },
+    "coder": {
+      "showParentApps": true
     }
   }
 }
