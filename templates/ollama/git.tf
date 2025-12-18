@@ -12,3 +12,12 @@ resource "coder_script" "configure_gitea_ssh" {
     ssh-keyscan -H git.globallogic.local > /home/coder/.ssh/known_hosts
   EOT
 }
+
+module "git-clone" {
+  count    = data.coder_workspace.me.start_count
+  source   = "registry.coder.com/modules/git-clone/coder"
+  version  = "1.0.12"
+  agent_id = coder_agent.main.id
+  url      = local.repo_url
+  base_dir = local.repo_base_dir
+}
