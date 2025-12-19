@@ -17,6 +17,12 @@ variable "ollama_model" {
   description = "The Ollama model to use for coding tasks."
 }
 
+variable "ollama_api_base" {
+  type        = string
+  default     = "http://host.containers.internal:11434"
+  description = "The Ollama API base URL."
+}
+
 # Stable Ollama icon from Simple Icons CDN
 locals {
   ollama_icon_url = "https://cdn.simpleicons.org/ollama/white" 
@@ -48,7 +54,7 @@ resource "coder_script" "ollama_setup" {
     # This ensures the command works for the Dashboard Button and the Terminal
     cat <<EOF > "$HOME/.local/bin/coder-ai"
 #!/bin/bash
-export OLLAMA_API_BASE="http://host.containers.internal:11434"
+export OLLAMA_API_BASE="${var.ollama_api_base}"
 exec "$HOME/.venv/aider/bin/aider" --model "ollama_chat/${var.ollama_model}" "\$@"
 EOF
 
