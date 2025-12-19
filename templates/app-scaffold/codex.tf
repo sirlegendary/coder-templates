@@ -3,7 +3,7 @@ module "codex" {
   version        = "3.1.1"
   agent_id       = coder_agent.main.id
   openai_api_key = data.kubernetes_secret_v1.openai_api_key.data["api-key"]
-  codex_model    = "gpt-5-mini"
+  codex_model    = "gpt-5-codex"
   ai_prompt      = data.coder_task.me.prompt 
   workdir        = local.repo_base_dir
 
@@ -52,6 +52,14 @@ REPOSITORY AND IMAGE CONVENTIONS (MANDATORY)
     - demo-go-api
 - Default branch MUST be main.
 - Use curl to create the repository. The token is available in the environment variable GITEA_TOKEN.
+- Use the GITEA_TOKEN environment variable to authenticate with Gitea.
+- Here is example curl command to create a repository:
+  curl -s -X POST https://${var.gitea_registry_host}/api/v1/admin/users/${var.gitea_demo_org}/repos \
+  -H "Content-Type: application/json" \
+  -H "Authorization: token $GITEA_TOKEN" \
+  -d '{"name":"NAME OF THE REPOSITORY"}'
+- Set git remote to the repository. Example:
+    - git remote add origin ${var.git_url}/${var.gitea_demo_org}/demo-python-app.git
 - Each application MUST be deployed into its own Kubernetes namespace:
   - app-<repo-name>
   - Example: app-demo-python-landing
