@@ -37,3 +37,33 @@ variable "coder_ca_secret_namespace" {
   default     = "cert-manager"
   description = "Namespace of the CA bundle secret (if coder_ca_secret_name is set)."
 }
+
+variable "company_name" {
+  type        = string
+  default     = "GlobalLogic"
+  description = "Name of the company."
+}
+
+variable "company_branding_url" {
+  type        = string
+  default     = "https://www.globallogic.com/wp-content/uploads/2022/06/GL_BrandGuide.pdf"
+  description = "URL to the company's branding guidelines."
+}
+
+variable "gitea_registry_host" {
+  type        = string
+  default     = "gitea.globallogic.local"
+  description = "Host for the Gitea container registry."
+}
+
+variable "git_url" {
+  type        = string
+  default     = "git@git.globallogic.local"
+  description = "URL to the Gitea instance."
+}
+
+variable "gitea_demo_org" {
+  type        = string
+  default     = "sirlegendary"
+  description = "Gitea demo organisation."
+}
