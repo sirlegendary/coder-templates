@@ -9,3 +9,10 @@ data "kubernetes_secret_v1" "openai_api_key" {
     namespace = var.namespace
   }
 }
+
+data "kubernetes_secret_v1" "gitea_token" {
+  metadata {
+    name      = "gitea-token"
+    namespace = "gitea"
+  }
+}

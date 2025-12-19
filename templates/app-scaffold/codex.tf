@@ -51,6 +51,7 @@ REPOSITORY AND IMAGE CONVENTIONS (MANDATORY)
     - demo-react-dashboard
     - demo-go-api
 - Default branch MUST be main.
+- Use curl to create the repository. The token is available in the environment variable GITEA_TOKEN.
 - Each application MUST be deployed into its own Kubernetes namespace:
   - app-<repo-name>
   - Example: app-demo-python-landing
