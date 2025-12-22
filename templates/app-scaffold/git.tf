@@ -3,7 +3,7 @@ module "coder-templates" {
   source   = "registry.coder.com/modules/git-clone/coder"
   version  = "1.0.12"
   agent_id = coder_agent.main.id
-  url      = "git@git.globallogic.local:sirlegendary/coder-templates.git"
+  url      = "git@git.globallogic.local:sirlegendary/platform-app-templates.git"
   base_dir = local.repo_base_dir
 }
 

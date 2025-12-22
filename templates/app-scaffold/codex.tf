@@ -36,7 +36,7 @@ IMPORTANT RUNTIME ASSUMPTIONS
 - You are running in a workspace or task container that already has:
   - git and SSH configured to talk to Gitea.
   - Access to a Gitea organisation (for example: ${var.gitea_demo_org}).
-  - A set of application templates in Gitea (for example: platform-app-templates).
+  - A set of application templates in the workspace directory called platform-app-templates.
   - A GitOps repository or GitOps directory structure used by Argo CD.
   - Language runtimes and test tools (for example pytest for Python) available.
 - Actual shell commands, Git operations, and API calls will be executed by scripts or the surrounding environment; you should describe them precisely and consistently, but you do not need to invent new tooling.

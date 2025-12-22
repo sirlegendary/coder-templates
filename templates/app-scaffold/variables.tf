@@ -46,7 +46,7 @@ variable "company_name" {
 
 variable "company_branding_url" {
   type        = string
-  default     = "https://www.globallogic.com/wp-content/uploads/2022/06/GL_BrandGuide.pdf"
+  default     = "https://github.com/sirlegendary/platform-app-templates/blob/main/shared/branding/FINAL_2024Nov_GlobalLogic_BrandGuidelines.pdf"
   description = "URL to the company's branding guidelines."
 }
 
