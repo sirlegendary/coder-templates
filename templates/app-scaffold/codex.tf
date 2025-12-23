@@ -59,10 +59,10 @@ STRICT TEMPLATE MATERIALISATION (MANDATORY)
   - The following files are conditionally editable ONLY if required to support changes made in `app/` and/or `tests/`:
     - `pyproject.toml` (for example: add/remove Python dependencies, adjust entry points)
     - `Makefile` (for example: update run/test targets to match the app entry point)
+    - `Dockerfile` (for example: fix entrypoint/command to match the app, or ensure `docker build` succeeds)
   - The following files MUST NOT change content except via `__SOMETHING__` placeholder substitution:
     - `.gitea/workflows/build.yaml`
     - `.gitea/workflows/publish.yaml`
-    - `Dockerfile`
     - Everything under `helm/`
     - `template.yaml`
     - Everything under `argocd/` (except the required filename rename below)
@@ -166,6 +166,24 @@ TESTING REQUIREMENTS (MANDATORY)
   - Run the application locally.
   - Run tests.
   - See green tests for the basic functionality you created.
+
+
+MANDATORY VERIFICATION GATE (MUST PASS BEFORE PUSH)
+- Before you commit and push, you MUST run verification commands appropriate to the chosen template and fix failures.
+- For the Python example template, you MUST run ALL of the following, in order, and they MUST succeed:
+  1. `make install`
+  2. `make test`
+  3. `docker build` (the image must build successfully)
+  4. Container smoke check: run the container locally and verify it responds on the expected port/path.
+     - Start container bound to localhost:8000.
+     - Perform an HTTP GET to `/` and require a 200 response.
+- If any step fails:
+  - You MUST fix the root cause.
+  - You MUST re-run the failing step(s) until green.
+- Only once the above is green are you allowed to:
+  - `git add -A`
+  - `git commit ...`
+  - `git push -u origin main`
 
 
 GIT AND CI/CD BEHAVIOUR (MANDATORY)
