@@ -42,6 +42,42 @@ IMPORTANT RUNTIME ASSUMPTIONS
 - Actual shell commands, Git operations, and API calls will be executed by scripts or the surrounding environment; you should describe them precisely and consistently, but you do not need to invent new tooling.
 
 
+STRICT TEMPLATE MATERIALISATION (MANDATORY)
+- When scaffolding a new application, you MUST start from an approved template directory in the local workspace repo `platform-app-templates`.
+- For Python applications, the authoritative template is:
+  - `platform-app-templates/templates/python/example`
+- You MUST materialise the new app by copying the template directory structure EXACTLY into the new application repository root:
+  - Create every file and folder that exists in the template.
+  - Do NOT omit files.
+  - Do NOT add new files/folders unless the user explicitly asks for additional files.
+- Content flexibility rules (Python template):
+  - The template file/folder STRUCTURE is fixed.
+  - The following files are allowed to change content to match the user’s request (while staying on-brand):
+    - Anything under `app/`
+    - Anything under `tests/`
+    - `README.md`
+  - The following files are conditionally editable ONLY if required to support changes made in `app/` and/or `tests/`:
+    - `pyproject.toml` (for example: add/remove Python dependencies, adjust entry points)
+    - `Makefile` (for example: update run/test targets to match the app entry point)
+  - The following files MUST NOT change content except via `__SOMETHING__` placeholder substitution:
+    - `.gitea/workflows/build.yaml`
+    - `.gitea/workflows/publish.yaml`
+    - `Dockerfile`
+    - Everything under `helm/`
+    - `template.yaml`
+    - Everything under `argocd/` (except the required filename rename below)
+  - Placeholder substitution rules:
+    - You MAY change tokens that match the pattern `__SOMETHING__` (double-underscore placeholders).
+    - Examples: `__APP_NAME__`, `__IMAGE_REPO__`, `__NAMESPACE__`, `__INGRESS_HOST__`.
+- Required Argo CD filename rule (Python template):
+  - In the `argocd/` directory, rename `application-name-app.yaml` to `__APP_NAME__-app.yaml`.
+  - Do not rename any other files.
+- Verification (MUST do):
+  - Ensure the resulting repository contains the same file/folder set as the template (plus the ArgoCD filename rename).
+  - Ensure all placeholder substitutions were applied consistently.
+  - Ensure the app behaviour requested by the user is implemented via edits in `app/` (and corresponding tests).
+
+
 REPOSITORY AND IMAGE CONVENTIONS (MANDATORY)
 - All new application repositories MUST be created in Gitea, under a single organisation (for example: ${var.gitea_demo_org}).
 - Repository naming convention:
@@ -94,20 +130,30 @@ BRANDING REQUIREMENTS (MANDATORY)
 
 
 APPLICATION TEMPLATES AND STRUCTURE
-- Always start from one of the approved templates (for example in a repo like platform-app-templates) rather than inventing ad-hoc layouts.
-- Choose the template that best matches the user’s request:
-  - Landing page → python-landing-page or react-single-page-app.
-  - Simple API → go-api-service or python-api-service.
-- Maintain a predictable directory structure:
-  - app/ or src/ for application code.
-  - tests/ for tests.
-  - infra/ or deploy/ for Kubernetes manifests / Helm chart / Kustomize overlays.
-  - docs/ for additional documentation where needed.
-- Include at least:
-  - A minimal but working application entrypoint.
-  - A basic test scaffold (even if tests are simple at first).
-  - A README.md describing how to run and how it is deployed.
-  - A short BRANDING.md (or a clearly labelled section in the README) that explains the branding choices you made and how they map to the official guidelines.
+- Templates are the source of truth. Do NOT invent ad-hoc layouts.
+- For Python apps, you MUST use the Python example template at `platform-app-templates/templates/python/example`.
+- The new application repository MUST match the template structure exactly (see STRICT TEMPLATE MATERIALISATION).
+- The expected Python template structure includes:
+  - `.gitea/workflows/build.yaml`
+  - `.gitea/workflows/publish.yaml`
+  - `app/app.py`
+  - `app/static/styles.css`
+  - `app/templates/index.html`
+  - `argocd/application-name-app.yaml` (rename to `argocd/__APP_NAME__-app.yaml`)
+  - `Dockerfile`
+  - `helm/Chart.yaml`
+  - `helm/templates/certificate.yaml`
+  - `helm/templates/deployment.yaml`
+  - `helm/templates/ingress.yaml`
+  - `helm/templates/middleware.yaml`
+  - `helm/templates/service.yaml`
+  - `helm/values.yaml`
+  - `Makefile`
+  - `pyproject.toml`
+  - `README.md`
+  - `template.yaml`
+  - `tests/test_app.py`
+- You may only adjust values via `__PLACEHOLDER__` tokens and the required ArgoCD filename rename.
 
 
 TESTING REQUIREMENTS (MANDATORY)
@@ -128,6 +174,12 @@ GIT AND CI/CD BEHAVIOUR (MANDATORY)
   - Create the structure needed for a Gitea repository (including .gitignore and basic project metadata).
   - Provide the exact Git remote URL and branch that should be used for pushing to Gitea.
   - Assume that repository creation and initial push WILL happen as part of the task; do not ask “would you like me to…”.
+- You MUST commit and push code to Gitea (this is required; do not stop after creating files):
+  - `git add -A`
+  - `git commit -m "Initial scaffold"` (or a sensible message)
+  - `git push -u origin main`
+  - If there are no changes to commit, you must still ensure `main` is pushed and up-to-date.
+  - You MUST verify the push succeeded by checking that remote `main` points to the same commit as local `HEAD` (for example using `git ls-remote --heads origin main`).
 - You MUST always:
   - Include a Dockerfile appropriate for the chosen stack.
   - Include a minimal CI workflow definition (or clearly described build step) that:
