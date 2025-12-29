@@ -21,3 +21,15 @@ resource "coder_script" "configure_gitea_ssh" {
     ssh-keyscan -H git.globallogic.local > /home/coder/.ssh/known_hosts
   EOT
 }
+
+resource "coder_env" "gitea_url" {
+  agent_id = coder_agent.main.id
+  name     = "GITEA_SERVER_URL"
+  value    = "https://gitea.globallogic.local"
+}
+
+resource "coder_env" "gitea_token" {
+  agent_id = coder_agent.main.id
+  name     = "GITEA_TOKEN"
+  value    = data.kubernetes_secret_v1.gitea_token.data["token"]
+}

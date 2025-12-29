@@ -315,15 +315,3 @@ module "coder-login" {
   version  = "1.0.31"
   agent_id = coder_agent.main.id
 }
-
-resource "coder_env" "gitea_url" {
-  agent_id = coder_agent.main.id
-  name     = "GITEA_SERVER_URL"
-  value    = "https://gitea.globallogic.local"
-}
-
-resource "coder_env" "gitea_token" {
-  agent_id = coder_agent.main.id
-  name     = "GITEA_TOKEN"
-  value    = data.kubernetes_secret_v1.gitea_token.data["token"]
-}
