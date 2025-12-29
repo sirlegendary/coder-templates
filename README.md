@@ -1,5 +1,3 @@
-
-
 ## Resources
 
 - [Coder Documentation](https://coder.com/docs)
