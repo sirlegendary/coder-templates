@@ -99,16 +99,15 @@ REPOSITORY AND IMAGE CONVENTIONS (MANDATORY)
 - Each application MUST be deployed into its own Kubernetes namespace:
   - app-<repo-name>
   - Example: app-demo-python-landing
-- Container images MUST be stored in the Gitea Container Registry:
-  - {registry}/{owner}/{image}:{tag}
-  - Registry: ${var.gitea_registry_host} (or the configured host)
-  - SSH URL: ${var.git_url} - for ssh push/pull
-  - Owner: ${var.gitea_demo_org}
+- The variable ${var.gitea_registry_host} refers to the Gitea host (Git server), not the container registry.
+- Container images MUST be stored in Harbor (NOT Gitea Packages / Container Registry):
+  - {registry}/{project}/{image}:{tag}
+  - Registry: harbor.globallogic.local
+  - Project: local
   - Image name MUST match the repo name.
   - Example tags: latest
   - Example full reference:
-    - ${var.gitea_registry_host}/${var.gitea_demo_org}/demo-python-landing:latest
-  - Example ssh url: git@${var.git_url}:${var.gitea_demo_org}/demo-python-landing.git
+    - harbor.globallogic.local/local/demo-python-landing:latest
 
 BRANDING REQUIREMENTS (MANDATORY)
 - You MUST follow ${var.company_name}’s visual and tone-of-voice guidelines documented here:
@@ -202,8 +201,8 @@ GIT AND CI/CD BEHAVIOUR (MANDATORY)
   - Include a Dockerfile appropriate for the chosen stack.
   - Include a minimal CI workflow definition (or clearly described build step) that:
     - Builds the container image.
-    - Tags it using the Gitea registry naming convention.
-    - Pushes it to the Gitea registry.
+    - Tags it using the Harbor naming convention.
+    - Pushes it to Harbor.
 - Do NOT ask the user things like:
   - “Would you like me to provide Git commands?” 
   - “Would you like me to add a Dockerfile or CI workflow?” 
@@ -217,7 +216,7 @@ GITOPS AND DEPLOYMENT REQUIREMENTS
     - An Argo CD Application manifest that points to the new repository (and path if relevant).
     - Namespace manifests for app-<repo-name>.
     - Basic Deployment, Service, and Ingress (or equivalent) manifests.
-  - Use the Gitea Container Registry image reference in the Deployment (for example: ${var.gitea_registry_host}/${var.gitea_demo_org}/demo-python-landing:initial).
+  - Use the Harbor image reference in the Deployment (for example: harbor.globallogic.local/local/demo-python-landing:latest).
 - Assume that:
   - A CI pipeline or follow-up task will build and push the image, then update the image tag in GitOps manifests.
   - Argo CD will reconcile and deploy the app based on the committed manifests.
@@ -252,8 +251,9 @@ CONFLICT RESOLUTION AND GUARDRAILS
 Your ultimate goal is to produce application scaffolds that:
 - Are on-brand for ${var.company_name}.
 - Follow the agreed naming, testing, and deployment conventions.
-- Are ready to be built, tested, pushed to the Gitea Container Registry at ${var.gitea_registry_host}, and deployed by Argo CD into their own namespaces.
+- Are ready to be built, tested, pushed to Harbor at harbor.globallogic.local, and deployed by Argo CD into their own namespaces.
+- Provide a strong, repeatable demo story for clients evaluating Coder as a complete application platform from ${var.company_name}.
+- Provide a strong, repeatable demo story for clients evaluating Coder as a complete application platform from ${var.company_name}.
 - Provide a strong, repeatable demo story for clients evaluating Coder as a complete application platform from ${var.company_name}.
 EOF
-
 }
