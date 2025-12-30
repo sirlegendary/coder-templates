@@ -110,16 +110,66 @@ REPOSITORY AND IMAGE CONVENTIONS (MANDATORY)
     - harbor.globallogic.local/local/demo-python-landing:latest
 
 BRANDING REQUIREMENTS (MANDATORY)
-- You MUST follow ${var.company_name}’s visual and tone-of-voice guidelines documented here:
+- You MUST follow ${var.company_name}’s visual and tone-of-voice guidelines.
+- The high-level brand guidelines (PDF/Docs) are located here:
   - ${var.company_branding_url}
+- HOWEVER, for code implementation, you MUST use the official CSS tokens.
+- These tokens implement the brand guidelines (colors, fonts, spacing).
+- You MUST use these CSS variables (e.g. var(--brand-primary)) instead of hardcoded hex values.
+
+OFFICIAL DESIGN TOKENS (tokens.css):
+---------------------------------------------------------
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');
+
+:root {
+  /* --- FOUNDATION TOKENS (Official May 2024 Palette) --- */
+  --gl-color-impact-orange: #FF5F2D;
+  --gl-color-light-orange: #FFCEB9;
+  --gl-color-deep-orange: #CF3708;
+  
+  --gl-color-impact-blue: #4442E3;
+  --gl-color-light-blue: #D5D4FF;
+  --gl-color-deep-blue: #00018B;
+
+  --gl-color-white: #FFFFFF;
+  --gl-color-light-steel: #F2F3F6;
+  --gl-color-steel-gray-25: #C8CAD3;
+  --gl-color-steel-gray-50: #858A9B;
+  --gl-color-steel-gray-75: #484F6B;
+  --gl-color-steel-gray-100: #181A24;
+
+  /* --- SEMANTIC TOKENS (Use these in your components) --- */
+  --brand-primary: var(--gl-color-impact-orange);
+  --brand-secondary: var(--gl-color-impact-blue);
+  
+  --text-primary: var(--gl-color-steel-gray-100);
+  --text-muted: var(--gl-color-steel-gray-75);
+  --text-on-orange: var(--gl-color-white); /* Required for accessibility */
+  
+  --bg-main: var(--gl-color-white);
+  --bg-alt: var(--gl-color-light-steel);
+  --border-subtle: var(--gl-color-steel-gray-25);
+
+  /* --- TYPOGRAPHY --- */
+  --font-family-base: "Manrope", Arial, sans-serif;
+  --font-weight-regular: 400;  /* Body copy */
+  --font-weight-medium: 500;   /* Subheadings */
+  --font-weight-semibold: 600; /* Headlines */
+  --font-weight-bold: 700;     /* Section titles */
+
+  /* --- LAYOUT & GRID (Proportional System) --- */
+  --grid-margin: 5%; /* Standard margin (5-8% of shortest side) */
+  --grid-gutter: 2.5%; /* Half of margin */
+}
+---------------------------------------------------------
+
 - You MUST:
-  - Use only the approved colour palette, or shades derived from those colours.
-  - Use the approved font stack.
+  - Use the approved font stack (Manrope).
   - Keep layout clean, responsive, and accessible (aim for WCAG AA contrast).
   - Use UK English spelling and the defined tone of voice in all copy and documentation.
 - You MUST NOT:
   - Invent your own arbitrary colour schemes.
-  - Use inline CSS that contradicts the design system if a shared stylesheet or tokens are available.
+  - Use inline CSS that contradicts the design system - USE THE TOKENS ABOVE.
 - When you create documentation related to branding (for example README sections or a BRANDING.md file), you MUST:
   - Explicitly state which primary/secondary colours, fonts and layout decisions you have applied.
   - Briefly justify the choices with respect to the branding guidelines (for example: “Primary brand blue is used for the header and primary buttons; secondary accent colour is used for call-to-action highlights.”).

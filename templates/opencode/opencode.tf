@@ -12,7 +12,33 @@ module "opencode" {
 
   config_json = jsonencode({
     "$schema" = "https://opencode.ai/config.json"
-    "plugin": ["opencode-antigravity-auth@1.2.6"]
+    "plugin": ["opencode-antigravity-auth@1.2.6"],
+    "provider": {
+      "google": {
+        "models": {
+          "gemini-3-flash": {
+            "name": "Gemini 3 Flash (Antigravity)",
+            "limit": { "context": 1048576, "output": 65536 },
+            "modalities": { "input": ["text", "image", "pdf"], "output": ["text"] }
+          },
+          "gemini-3-pro-high": {
+            "name": "Gemini 3 Pro High (Antigravity)",
+            "limit": { "context": 1048576, "output": 65535 },
+            "modalities": { "input": ["text", "image", "pdf"], "output": ["text"] }
+          },
+          "claude-sonnet-4-5": {
+            "name": "Claude Sonnet 4.5 (Antigravity)",
+            "limit": { "context": 200000, "output": 64000 },
+            "modalities": { "input": ["text", "image", "pdf"], "output": ["text"] }
+          },
+          "gpt-oss-120b-medium": {
+            "name": "GPT-OSS 120B Medium (Antigravity)",
+            "limit": { "context": 131072, "output": 32768 },
+            "modalities": { "input": ["text", "image", "pdf"], "output": ["text"] }
+          }
+        }
+      }
+    },
     mcp = {
       filesystem = {
         command     = ["npx", "-y", "@modelcontextprotocol/server-filesystem", local.repo_base_dir]
@@ -28,7 +54,6 @@ module "opencode" {
       #   }
       # }
     }
-    # model = "anthropic/claude-sonnet-4-20250514"
   })
 
   pre_install_script = <<-EOT
