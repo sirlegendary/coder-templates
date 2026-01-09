@@ -307,7 +307,11 @@ module "code-server" {
   folder = local.repo_base_dir
 
   agent_id   = coder_agent.main.id
-  extensions = ["hashicorp.terraform", "hashicorp.hcl"]
+  extensions = ["hashicorp.terraform", "hashicorp.hcl", "Google.gemini-cli-vscode-ide-companion", "DavidAnson.vscode-markdownlint"]
+  settings = {
+    "chat.disableAIFeatures" = true,
+    "workbench.colorTheme"   = "Visual Studio Dark"
+  }
 }
 
 module "coder-login" {

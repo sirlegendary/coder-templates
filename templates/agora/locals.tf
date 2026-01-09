@@ -11,10 +11,11 @@ locals {
   workspaces_volume_size = "10"
 
   // Git Locals
-  git_author_name  = coalesce(data.coder_workspace_owner.me.full_name, data.coder_workspace_owner.me.name)
-  git_author_email = data.coder_workspace_owner.me.email
+  git_author_name  = "Wale Salami"
+  git_author_email = "wale.salami@globallogic.com"
+  bitbucket_email  = local.git_author_email
   # repo_url         = data.coder_parameter.repo_url.value
-  repo_base_dir    = "/workspaces"
+  repo_base_dir = "/workspaces"
 
   // Startup script - Docker sidecar sets DOCKER_HOST automatically
   startup_script = <<-EOT
