@@ -1,10 +1,25 @@
 module "gemini" {
-  source           = "registry.coder.com/coder-labs/gemini/coder"
-  version          = "3.0.0"
-  agent_id         = coder_agent.main.id
-  folder           = local.repo_base_dir
-  enable_yolo_mode = true # Auto-approve all tool calls for automation
-  gemini_version   = "preview"
+  source               = "registry.coder.com/coder-labs/gemini/coder"
+  version              = "3.0.0"
+  agent_id             = coder_agent.main.id
+  folder               = local.repo_base_dir
+  enable_yolo_mode     = true # Auto-approve all tool calls for automation
+  gemini_version       = "preview"
+  gemini_settings_json = <<JSON
+    {
+      "ide": {
+        "hasSeenNudge": true
+      },
+      "security": {
+        "auth": {
+          "selectedType": "oauth-personal"
+        }
+      },
+      "experimental": {
+        "skills": true
+      }
+    }
+  JSON
 }
 
 resource "coder_script" "gemini_skills" {
@@ -22,7 +37,7 @@ resource "coder_script" "gemini_skills" {
     mkdir -p ~/.gemini/skills/frontend-ui-designer
     curl -fsSL https://raw.githubusercontent.com/GrishaAngelovGH/gemini-cli-agent-skills/refs/heads/main/frontend-ui-designer/SKILL.md > ~/.gemini/skills/frontend-ui-designer/SKILL.md
     
-  EOT
+  EOT 
 
   depends_on = [module.gemini]
 }

@@ -40,10 +40,22 @@ resource "coder_script" "clone_bitbucket_repos" {
 
     echo "Cloning Bitbucket repos..."
     cd /workspaces
-    git clone git@bitbucket.org:ecs-group/agora-apps.git
-    git clone git@bitbucket.org:ecs-group/agora-base.git
-    git clone git@bitbucket.org:ecs-group/agent-share.git
-    git clone git@bitbucket.org:ecs-group/coder-templates.git
+
+    clone_if_missing() {
+      repo_url=$1
+      dir_name=$(basename "$repo_url" .git)
+      if [ ! -d "$dir_name" ]; then
+        echo "Cloning $repo_url..."
+        git clone "$repo_url"
+      else
+        echo "Directory $dir_name already exists. Skipping clone."
+      fi
+    }
+
+    clone_if_missing git@bitbucket.org:ecs-group/agora-apps.git
+    clone_if_missing git@bitbucket.org:ecs-group/agora-base.git
+    clone_if_missing git@bitbucket.org:ecs-group/agent-share.git
+    clone_if_missing git@bitbucket.org:ecs-group/coder-templates.git
   EOT
 
   depends_on = [coder_script.configure_bitbucket_ssh]
